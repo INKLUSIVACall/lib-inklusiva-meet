@@ -174,17 +174,45 @@ export default class JitsiTrack extends EventEmitter {
      * @protected
      */
     _setStream(stream) {
-        if (this.stream === stream) {
+        if (this.baseStream === stream) {
             return;
         }
 
         this.stream = stream;
+        this.baseStream = stream;
+        this.baseTrack = this.track;
+        this.audioFilter = null;
 
         // TODO Practically, that's like the opposite of _unregisterHandlers
         // i.e. may be abstracted into a function/method called
         // _registerHandlers for clarity and easing the maintenance of the two
         // pieces of source code.
         if (this.stream) {
+            if (this.type == 'audio' && !this.isLocalAudioTrack() && this.stream.getTracks().length > 0) {
+                // Chrome bug circumvention.
+                let tempAudio = new Audio();
+                tempAudio.srcObject = this.stream;
+                tempAudio.volume = 0;
+                tempAudio.muted = true;
+                tempAudio.addEventListener('canplaythrough', () => {
+                    tempAudio = null;
+                });
+
+                const audioContext = new AudioContext();                
+                const streamSource = audioContext.createMediaStreamSource(this.stream);
+                const destinationStreamNode = audioContext.createMediaStreamDestination();
+
+                this.audioFilter = audioContext.createBiquadFilter();
+                this.audioFilter.type = 'lowpass';                
+                this.audioFilter.frequency.value = 24000;
+
+                streamSource.connect(this.audioFilter);
+                this.audioFilter.connect(destinationStreamNode);
+
+                this.stream = destinationStreamNode.stream;
+                this.track = destinationStreamNode.stream.getAudioTracks()[0];
+            }
+
             for (const type of this.handlers.keys()) {
                 this._setHandler(type, this.handlers.get(type));
             }
@@ -228,7 +256,7 @@ export default class JitsiTrack extends EventEmitter {
      * @returns {void}
      */
     attach(container) {
-        if (this.stream) {
+        if (this.stream) {            
             this._onTrackAttach(container);
             RTCUtils.attachMediaStream(container, this.stream);
         }
