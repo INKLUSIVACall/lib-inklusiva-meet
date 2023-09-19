@@ -482,6 +482,10 @@ export default class ChatRoom extends Listenable {
      * @param pres
      */
     onPresence(pres) {
+        // TODO: Remove
+        console.log("Receiving presence: ");
+        console.log(pres);
+
         const from = pres.getAttribute('from');
         const member = {};
         const statusEl = pres.getElementsByTagName('status')[0];
@@ -508,6 +512,7 @@ export default class ChatRoom extends Listenable {
         const jid = mucUserItem && mucUserItem.getAttribute('jid');
 
         member.jid = jid;
+        member.tags = [];
         member.isFocus = this.moderator.isFocusJid(jid);
         member.isHiddenDomain
             = jid && jid.indexOf('@') > 0
@@ -559,6 +564,12 @@ export default class ChatRoom extends Listenable {
                 break;
             case 'features': {
                 member.features = this._extractFeatures(node);
+                break;
+            }
+            case 'tags': {
+                // TODO: Unpack node
+                member.tags = node;
+                console.log(node);
                 break;
             }
             case 'stat': {
@@ -647,7 +658,8 @@ export default class ChatRoom extends Listenable {
                     member.botType,
                     member.jid,
                     member.features,
-                    member.isReplaceParticipant);
+                    member.isReplaceParticipant,
+                    member.tags);
 
                 // we are reporting the status with the join
                 // so we do not want a second event about status update
@@ -664,10 +676,12 @@ export default class ChatRoom extends Listenable {
                     XMPPEvents.MUC_ROLE_CHANGED, from, member.role);
             }
 
+            
+
             // affiliation changed
             if (memberOfThis.affiliation !== member.affiliation) {
                 memberOfThis.affiliation = member.affiliation;
-            }
+            }            
 
             // fire event that botType had changed
             if (memberOfThis.botType !== member.botType) {
@@ -1262,6 +1276,52 @@ export default class ChatRoom extends Listenable {
             grantIQ,
             result => logger.log('Set affiliation of participant with jid: ', jid, 'to', affiliation, result),
             error => logger.log('Set affiliation of participant error: ', error));
+    }
+
+    /**
+     * Adds a tag to a user object.
+     * @param jid
+     * @param affiliation
+     */
+    addTag(participantJid, tagName) {        
+        const addTagIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('set-tag', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up()
+        .c('participant').t(participantJid).up()
+        .c('tag').t(tagName).up()
+        .up();
+
+        console.log(addTagIQ);
+
+        this.connection.sendIQ(
+            addTagIQ,
+            result => logger.log('Added tag ', tagName, ' to ', participantJid, result),
+            error => logger.log('Adding tag to participant participant error: ', error));
+    }
+
+    /**
+     * Removes a tag from a user object.
+     * @param jid
+     * @param affiliation
+     */
+    removeTag(participantJid, tagName) {
+        const removeTagIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('remove-tag', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up()
+        .c('participant').t(participantJid).up()
+        .c('tag').t(tagName).up()
+        .up();
+
+        this.connection.sendIQ(
+            removeTagIQ,
+            result => logger.log('Removed tag ', tagName, ' from ', participantJid, result),
+            error => logger.log('Removing tag from participant participant error: ', error));
     }
 
     /**

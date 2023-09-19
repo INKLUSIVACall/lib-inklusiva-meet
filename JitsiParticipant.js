@@ -26,8 +26,9 @@ export default class JitsiParticipant {
      * @param {object} identity - the xmpp identity
      * @param {boolean?} isReplacing - whether this is a participant replacing another into the meeting.
      * @param {boolean?} isReplaced - whether this is a participant to be kicked and replaced into the meeting.
+     * @param {string[]} tags - the participant tags.
      */
-    constructor(jid, conference, displayName, hidden, statsID, status, identity, isReplacing, isReplaced) {
+    constructor(jid, conference, displayName, hidden, statsID, status, identity, isReplacing, isReplaced, tags) {
         this._jid = jid;
         this._id = Strophe.getResourceFromJid(jid);
         this._conference = conference;
@@ -42,6 +43,7 @@ export default class JitsiParticipant {
         this._identity = identity;
         this._isReplacing = isReplacing;
         this._isReplaced = isReplaced;
+        this._tags = tags;
         this._features = new Set();
 
         /**
@@ -167,6 +169,21 @@ export default class JitsiParticipant {
      */
     getRole() {
         return this._role;
+    }
+
+    /**
+     * @returns {string[]} The tags of this participant.
+     */
+    getTags() {
+        return this._tags;
+    }
+
+    /**
+     * Set user tags.
+     * @param {string[]} tags 
+     */
+    setTags(tags) {
+        this._tags = tags;
     }
 
     /**
@@ -339,6 +356,22 @@ export default class JitsiParticipant {
      */
     setRole(newRole) {
         this._role = newRole;
+    }
+
+    /**
+     * Adds a tag to the participant.
+     * @param {string} tagName
+     */
+    addTag(tagName) {
+        this.conference.addTag(this.jid, tagName);
+    }
+
+    /**
+     * Removes a tag from the participant.
+     * @param {string} tagName
+     */
+    removeTag(tagName) {
+        this.conference.removeTag(this.jid, tagName);
     }
 
     /**

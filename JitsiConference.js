@@ -1706,6 +1706,35 @@ JitsiConference.prototype.grantOwner = function(id) {
 };
 
 /**
+ * Adds an unspecified tag to a participant.
+ * @param {string} id id of the participant to add a tag to.
+ * @param {string} tagName name of the role to grant.
+ */
+JitsiConference.prototype.addTag = function(id, tagName) {
+    const participant = this.getParticipantById(id);
+
+    if (!participant) {
+        return;
+    }
+    this.room.addTag(participant.getConnectionJid(), tagName);
+};
+
+/**
+ * Removes an unspecified tag to a participant.
+ * @param {string} id id of the participant to add a tag to.
+ * @param {string} tagName name of the role to remove.
+ */
+JitsiConference.prototype.removeTag = function(id, tagName) {
+    const participant = this.getParticipantById(id);
+
+    if (!participant) {
+        return;
+    }
+    this.room.removeTag(participant.getConnectionJid(), tagName);
+};
+
+
+/**
  * Revoke owner rights to the participant or local Participant as
  * the user might want to refuse to be a moderator.
  * @param {string} id id of the participant to revoke owner rights to.
@@ -1814,7 +1843,7 @@ JitsiConference.prototype.muteParticipant = function(id, mediaType) {
  * the same jwt.
  */
 JitsiConference.prototype.onMemberJoined = function(
-        jid, nick, role, isHidden, statsID, status, identity, botType, fullJid, features, isReplaceParticipant) {
+        jid, nick, role, isHidden, statsID, status, identity, botType, fullJid, features, isReplaceParticipant, tags) {
     const id = Strophe.getResourceFromJid(jid);
 
     if (id === 'focus' || this.myUserId() === id) {
@@ -1827,6 +1856,7 @@ JitsiConference.prototype.onMemberJoined = function(
     participant.setBotType(botType);
     participant.setFeatures(features);
     participant.setIsReplacing(isReplaceParticipant);
+    participant.setTags(tags);
 
     // Set remote tracks on the participant if source signaling was received before presence.
     const remoteTracks = this.isP2PActive()

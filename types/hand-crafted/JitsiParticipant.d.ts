@@ -3,7 +3,7 @@ import JitsiTrack from './modules/RTC/JitsiTrack';
 import { MediaType } from './service/RTC/MediaType';
 
 export default class JitsiParticipant {
-  constructor( jid: unknown, conference: unknown, displayName: unknown, hidden: boolean, statsID: string, status: string, identity: unknown, isReplacing?: boolean, isReplaced?: boolean ); // TODO:
+  constructor( jid: unknown, conference: unknown, displayName: unknown, hidden: boolean, statsID: string, status: string, identity: unknown, isReplacing?: boolean, isReplaced?: boolean, tags?: any ); // TODO:
   getBotType: () => string | undefined;
   getConference: () => JitsiConference;
   getConnectionStatus: () => string;
@@ -13,6 +13,7 @@ export default class JitsiParticipant {
   getJid: () => string;
   getProperty: ( name: string ) => string;
   getRole: () => string;
+  getTags: () => any;
   getStatsID: () => string;
   getStatus: () => string;
   getTracks: () => JitsiTrack[];
@@ -30,5 +31,8 @@ export default class JitsiParticipant {
   setIsReplacing: (newIsReplacing: string) => void;
   setProperty: ( name: string, value: string ) => void;
   setRole: ( role: string ) => void;
+  setTags: ( tags: any ) => void;
+  addTag: ( tagName: string ) => void;
+  removeTag: ( tagName: string ) => void;
   supportsDTMF: () => boolean;
 }

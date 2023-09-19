@@ -79,7 +79,7 @@ export default class JitsiConference {
   revokeOwner: ( id: string ) => void;
   kickParticipant: ( id: string, reason?: string ) => void;
   muteParticipant: ( id: string, mediaType?: MediaType ) => void;
-  onMemberJoined: ( jid: string, nick: string, role: string, isHidden: boolean, statsID?: unknown, status?: string, identity?: unknown, botType?: unknown, fullJid?: string, features?: unknown, isReplaceParticipant?: boolean ) => void;
+  onMemberJoined: ( jid: string, nick: string, role: string, isHidden: boolean, statsID?: unknown, status?: string, identity?: unknown, botType?: unknown, fullJid?: string, features?: unknown, isReplaceParticipant?: boolean, tags?: any ) => void;
   onMemberLeft: ( jid: string, reason?: string ) => void;
   onMemberKicked: ( isSelfPresence: boolean, actorId: string, kickedParticipantId?: string, reason?: string, isReplaceParticipant?: boolean ) => void;
   onLocalRoleChanged: ( role: string ) => void;
