@@ -483,7 +483,7 @@ export default class ChatRoom extends Listenable {
      */
     onPresence(pres) {
         // TODO: Remove
-        console.log("Receiving presence: ");
+        console.log("I have a Presence: ");
         console.log(pres);
 
         const from = pres.getAttribute('from');
