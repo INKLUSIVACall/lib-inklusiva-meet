@@ -32,7 +32,7 @@ export default class JitsiParticipant {
   setProperty: ( name: string, value: string ) => void;
   setRole: ( role: string ) => void;
   setTags: ( tags: any ) => void;
-  addTag: ( tagName: string ) => void;
-  removeTag: ( tagName: string ) => void;
+  addICRole: ( icRole: string, partnerId: ?string = null ) => void;
+  removeICRole: ( icRole: string, partnerId: ?string = null ) => void;
   supportsDTMF: () => boolean;
 }

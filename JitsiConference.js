@@ -1706,31 +1706,33 @@ JitsiConference.prototype.grantOwner = function(id) {
 };
 
 /**
- * Adds an unspecified tag to a participant.
+ * Adds an Inclusiva-Call specific role to a participant.
  * @param {string} id id of the participant to add a tag to.
- * @param {string} tagName name of the role to grant.
+ * @param {string} icRole name of the role to grant.
+ * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
  */
-JitsiConference.prototype.addTag = function(id, tagName) {
+JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
     const participant = this.getParticipantById(id);
 
     if (!participant) {
         return;
     }
-    this.room.addTag(participant.getConnectionJid(), tagName);
+    this.room.addICRole(participant.getConnectionJid(), icRole, partnerId);
 };
 
 /**
  * Removes an unspecified tag to a participant.
  * @param {string} id id of the participant to add a tag to.
- * @param {string} tagName name of the role to remove.
+ * @param {string} icRole name of the role to remove.
+ * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
  */
-JitsiConference.prototype.removeTag = function(id, tagName) {
+JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) {
     const participant = this.getParticipantById(id);
 
     if (!participant) {
         return;
     }
-    this.room.removeTag(participant.getConnectionJid(), tagName);
+    this.room.removeICRole(participant.getConnectionJid(), icRole, partnerId);
 };
 
 

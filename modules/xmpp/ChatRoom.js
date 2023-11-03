@@ -483,7 +483,7 @@ export default class ChatRoom extends Listenable {
      */
     onPresence(pres) {
         // TODO: Remove
-        console.log("I have a Presence: ");
+        console.log("Hello presence: ");
         console.log(pres);
 
         const from = pres.getAttribute('from');
@@ -1279,48 +1279,58 @@ export default class ChatRoom extends Listenable {
     }
 
     /**
-     * Adds a tag to a user object.
+     * Adds an inclusiva call role to a user object.
      * @param jid
-     * @param affiliation
+     * @param icRole
+     * @param partnerId
      */
-    addTag(participantJid, tagName) {        
-        const addTagIQ = $iq({
+    addICRole(participantJid, icRole, partnerId = null) {        
+        let addICRoleIQ = $iq({
             to: this.roomjid,
             type: 'set'
         })
-        .c('set-tag', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('add-ic-role', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
         .c('room').t(this.roomjid).up()
         .c('participant').t(participantJid).up()
-        .c('tag').t(tagName).up()
-        .up();
-
-        console.log(addTagIQ);
+        .c('ic-role').c('name').t(icRole).up();
+        
+        if (partnerId != null) { //Partner will only be transmitted if necessary
+            addICRoleIQ = addICRoleIQ.c('partner').t(partnerId).up();
+        }
+        
+        addICRoleIQ = addICRoleIQ.up().up();
 
         this.connection.sendIQ(
-            addTagIQ,
-            result => logger.log('Added tag ', tagName, ' to ', participantJid, result),
-            error => logger.log('Adding tag to participant participant error: ', error));
+            addICRoleIQ,
+            result => logger.log('Added IC role ', icRole, ' to ', participantJid, result),
+            error => logger.log('Adding IC role to participant participant error: ', error));
     }
 
     /**
-     * Removes a tag from a user object.
+     * Removes an inclusiva call role to a user object.
      * @param jid
-     * @param affiliation
+     * @param icRole
+     * @param partnerId
      */
-    removeTag(participantJid, tagName) {
-        const removeTagIQ = $iq({
+    removeICRole(participantJid,  icRole, partnerId = null) {
+        let removeICRoleIQ = $iq({
             to: this.roomjid,
             type: 'set'
         })
-        .c('remove-tag', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('remove-ic-role', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
         .c('room').t(this.roomjid).up()
         .c('participant').t(participantJid).up()
-        .c('tag').t(tagName).up()
-        .up();
+        .c('ic-role').c('name').t(icRole).up();
+        
+        if (partnerId != null) { //Partner will only be transmitted if necessary
+            removeICRoleIQ  = removeICRoleIQ.c('partner').t(partnerId).up();
+        }
+        
+        removeICRoleIQ  = removeICRoleIQ.up().up();
 
         this.connection.sendIQ(
-            removeTagIQ,
-            result => logger.log('Removed tag ', tagName, ' from ', participantJid, result),
+            removeICRoleIQ,
+            result => logger.log('Removed IC role ', tagName, ' from ', participantJid, result),
             error => logger.log('Removing tag from participant participant error: ', error));
     }
 

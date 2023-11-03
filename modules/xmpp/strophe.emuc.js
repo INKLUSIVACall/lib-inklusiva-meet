@@ -30,6 +30,15 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
     init(connection) {
         super.init(connection);
 
+        console.log("INIT MUC HANDLER");
+
+        this.connection.rawInput = function(data) {
+            console.log('RECV:', data);
+        };
+        this.connection.rawOutput = function(data) {
+            console.log('SENT:', data);
+        };
+
         // add handlers (just once)
         this.connection.addHandler(this.onPresence.bind(this), null,
             'presence', null, null, null, null);
@@ -39,6 +48,8 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
             'presence', 'error', null);
         this.connection.addHandler(this.onMessage.bind(this), null,
             'message', null, null);
+        this.connection.addHandler(this.onIcTags.bind(this), null,
+            'ic-tags', null, null);
         this.connection.addHandler(this.onMute.bind(this),
             'http://jitsi.org/jitmeet/audio', 'iq', 'set', null, null);
         this.connection.addHandler(this.onMuteVideo.bind(this),
@@ -96,6 +107,8 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
      */
     onPresence(pres) {
         const from = pres.getAttribute('from');
+
+        console.log("HUHUHUHU!");
 
         // What is this for? A workaround for something?
         if (pres.getAttribute('type')) {
@@ -162,11 +175,21 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
         const from = msg.getAttribute('from');
         const room = this.rooms[Strophe.getBareJidFromJid(from)];
 
+        console.log("MESSAGE1234", msg);
+
         if (!room) {
             return true;
         }
 
+        //TODO: <ic> Tag implementieren
+
         room.onMessage(msg, from);
+
+        return true;
+    }
+
+    onIcTags(msg) {
+        console.log("ICTAGS1234", msg);
 
         return true;
     }
