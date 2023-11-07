@@ -1717,7 +1717,7 @@ JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
     if (!participant) {
         return;
     }
-    this.room.addICRole(participant.getConnectionJid(), icRole, partnerId);
+    this.room.addICRole(participant.getJid(), icRole, partnerId);
 };
 
 /**
@@ -1732,7 +1732,7 @@ JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) 
     if (!participant) {
         return;
     }
-    this.room.removeICRole(participant.getConnectionJid(), icRole, partnerId);
+    this.room.removeICRole(participant.getJid(), icRole, partnerId);
 };
 
 
@@ -1824,6 +1824,23 @@ JitsiConference.prototype.muteParticipant = function(id, mediaType) {
 };
 
 /* eslint-disable max-params */
+
+JitsiConference.prototype.onICMemberRoleUpdate = function(
+    jid, roles) {
+
+    const id = Strophe.getResourceFromJid(jid);
+
+    if (id === 'focus') {
+        return;
+    }
+
+    if(this.participants.has(id)) {
+        console.log("Saving roles to JitsiParticipant ", roles, id);
+        let participant = this.participants.get(id);
+
+        participant.updateICRoles(roles);
+    }
+}
 
 /**
  * Notifies this JitsiConference that a new member has joined its chat room.

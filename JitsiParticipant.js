@@ -26,7 +26,6 @@ export default class JitsiParticipant {
      * @param {object} identity - the xmpp identity
      * @param {boolean?} isReplacing - whether this is a participant replacing another into the meeting.
      * @param {boolean?} isReplaced - whether this is a participant to be kicked and replaced into the meeting.
-     * @param {string[2][]} icRoles - the participant tags.
      */
     constructor(jid, conference, displayName, hidden, statsID, status, identity, isReplacing, isReplaced) {
         this._jid = jid;
@@ -43,7 +42,6 @@ export default class JitsiParticipant {
         this._identity = identity;
         this._isReplacing = isReplacing;
         this._isReplaced = isReplaced;
-        this._icRoles = [];
         this._features = new Set();
 
         /**
@@ -58,6 +56,14 @@ export default class JitsiParticipant {
          * }
          */
         this._sources = new Map();
+    }
+
+    /**
+     * IC Roles of user will be stored in this method.
+     * @param {array} icRoles 
+     */
+    updateICRoles(icRoles) {
+        this._icRoles = icRoles;
     }
 
     /**

@@ -482,10 +482,6 @@ export default class ChatRoom extends Listenable {
      * @param pres
      */
     onPresence(pres) {
-        // TODO: Remove
-        console.log("Hello presence: ");
-        console.log(pres);
-
         const from = pres.getAttribute('from');
         const member = {};
         const statusEl = pres.getElementsByTagName('status')[0];
@@ -658,8 +654,7 @@ export default class ChatRoom extends Listenable {
                     member.botType,
                     member.jid,
                     member.features,
-                    member.isReplaceParticipant,
-                    member.tags);
+                    member.isReplaceParticipant);
 
                 // we are reporting the status with the join
                 // so we do not want a second event about status update
@@ -1330,7 +1325,7 @@ export default class ChatRoom extends Listenable {
 
         this.connection.sendIQ(
             removeICRoleIQ,
-            result => logger.log('Removed IC role ', tagName, ' from ', participantJid, result),
+            result => logger.log('Removed IC role ', icRole, ' from ', participantJid, result),
             error => logger.log('Removing tag from participant participant error: ', error));
     }
 
