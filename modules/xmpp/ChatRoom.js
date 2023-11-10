@@ -508,6 +508,7 @@ export default class ChatRoom extends Listenable {
         const jid = mucUserItem && mucUserItem.getAttribute('jid');
 
         member.jid = jid;
+        member.tags = [];
         member.isFocus = this.moderator.isFocusJid(jid);
         member.isHiddenDomain
             = jid && jid.indexOf('@') > 0
@@ -559,6 +560,12 @@ export default class ChatRoom extends Listenable {
                 break;
             case 'features': {
                 member.features = this._extractFeatures(node);
+                break;
+            }
+            case 'tags': {
+                // TODO: Unpack node
+                member.tags = node;
+                console.log(node);
                 break;
             }
             case 'stat': {
@@ -664,10 +671,12 @@ export default class ChatRoom extends Listenable {
                     XMPPEvents.MUC_ROLE_CHANGED, from, member.role);
             }
 
+            
+
             // affiliation changed
             if (memberOfThis.affiliation !== member.affiliation) {
                 memberOfThis.affiliation = member.affiliation;
-            }
+            }            
 
             // fire event that botType had changed
             if (memberOfThis.botType !== member.botType) {
@@ -1262,6 +1271,62 @@ export default class ChatRoom extends Listenable {
             grantIQ,
             result => logger.log('Set affiliation of participant with jid: ', jid, 'to', affiliation, result),
             error => logger.log('Set affiliation of participant error: ', error));
+    }
+
+    /**
+     * Adds an inclusiva call role to a user object.
+     * @param jid
+     * @param icRole
+     * @param partnerId
+     */
+    addICRole(participantJid, icRole, partnerId = null) {        
+        let addICRoleIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('add-ic-role', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up()
+        .c('participant').t(participantJid).up()
+        .c('ic-role').c('name').t(icRole).up();
+        
+        if (partnerId != null) { //Partner will only be transmitted if necessary
+            addICRoleIQ = addICRoleIQ.c('partner').t(partnerId).up();
+        }
+        
+        addICRoleIQ = addICRoleIQ.up().up();
+
+        this.connection.sendIQ(
+            addICRoleIQ,
+            result => logger.log('Added IC role ', icRole, ' to ', participantJid, result),
+            error => logger.log('Adding IC role to participant participant error: ', error));
+    }
+
+    /**
+     * Removes an inclusiva call role to a user object.
+     * @param jid
+     * @param icRole
+     * @param partnerId
+     */
+    removeICRole(participantJid,  icRole, partnerId = null) {
+        let removeICRoleIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('remove-ic-role', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up()
+        .c('participant').t(participantJid).up()
+        .c('ic-role').c('name').t(icRole).up();
+        
+        if (partnerId != null) { //Partner will only be transmitted if necessary
+            removeICRoleIQ  = removeICRoleIQ.c('partner').t(partnerId).up();
+        }
+        
+        removeICRoleIQ  = removeICRoleIQ.up().up();
+
+        this.connection.sendIQ(
+            removeICRoleIQ,
+            result => logger.log('Removed IC role ', icRole, ' from ', participantJid, result),
+            error => logger.log('Removing tag from participant participant error: ', error));
     }
 
     /**

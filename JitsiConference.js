@@ -1706,6 +1706,37 @@ JitsiConference.prototype.grantOwner = function(id) {
 };
 
 /**
+ * Adds an Inclusiva-Call specific role to a participant.
+ * @param {string} id id of the participant to add a tag to.
+ * @param {string} icRole name of the role to grant.
+ * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
+ */
+JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
+    const participant = this.getParticipantById(id);
+
+    if (!participant) {
+        return;
+    }
+    this.room.addICRole(participant.getJid(), icRole, partnerId);
+};
+
+/**
+ * Removes an unspecified tag to a participant.
+ * @param {string} id id of the participant to add a tag to.
+ * @param {string} icRole name of the role to remove.
+ * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
+ */
+JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) {
+    const participant = this.getParticipantById(id);
+
+    if (!participant) {
+        return;
+    }
+    this.room.removeICRole(participant.getJid(), icRole, partnerId);
+};
+
+
+/**
  * Revoke owner rights to the participant or local Participant as
  * the user might want to refuse to be a moderator.
  * @param {string} id id of the participant to revoke owner rights to.
@@ -1794,6 +1825,23 @@ JitsiConference.prototype.muteParticipant = function(id, mediaType) {
 
 /* eslint-disable max-params */
 
+JitsiConference.prototype.onICMemberRoleUpdate = function(
+    jid, roles) {
+
+    const id = Strophe.getResourceFromJid(jid);
+
+    if (id === 'focus') {
+        return;
+    }
+
+    if(this.participants.has(id)) {
+        console.log("Saving roles to JitsiParticipant ", roles, id);
+        let participant = this.participants.get(id);
+
+        participant.updateICRoles(roles);
+    }
+}
+
 /**
  * Notifies this JitsiConference that a new member has joined its chat room.
  *
@@ -1814,7 +1862,7 @@ JitsiConference.prototype.muteParticipant = function(id, mediaType) {
  * the same jwt.
  */
 JitsiConference.prototype.onMemberJoined = function(
-        jid, nick, role, isHidden, statsID, status, identity, botType, fullJid, features, isReplaceParticipant) {
+        jid, nick, role, isHidden, statsID, status, identity, botType, fullJid, features, isReplaceParticipant, tags) {
     const id = Strophe.getResourceFromJid(jid);
 
     if (id === 'focus' || this.myUserId() === id) {
@@ -1827,6 +1875,7 @@ JitsiConference.prototype.onMemberJoined = function(
     participant.setBotType(botType);
     participant.setFeatures(features);
     participant.setIsReplacing(isReplaceParticipant);
+    participant.setTags(tags);
 
     // Set remote tracks on the participant if source signaling was received before presence.
     const remoteTracks = this.isP2PActive()

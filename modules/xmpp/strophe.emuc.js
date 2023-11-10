@@ -5,6 +5,7 @@ import { Strophe } from 'strophe.js';
 import { XMPPEvents } from '../../service/xmpp/XMPPEvents';
 
 import ChatRoom from './ChatRoom';
+import ICExtensions from './ICExtensions';
 import { ConnectionPluginListenable } from './ConnectionPlugin';
 
 const logger = getLogger(__filename);
@@ -20,7 +21,8 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
     constructor(xmpp) {
         super();
         this.xmpp = xmpp;
-        this.rooms = {};
+        this.rooms = {};       
+        this.icExtensions = new ICExtensions();
     }
 
     /**
@@ -29,6 +31,15 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
      */
     init(connection) {
         super.init(connection);
+
+        console.log("INIT MUC HANDLER");
+
+        this.connection.rawInput = function(data) {
+            console.log('RECV:', data);
+        };
+        this.connection.rawOutput = function(data) {
+            console.log('SENT:', data);
+        };
 
         // add handlers (just once)
         this.connection.addHandler(this.onPresence.bind(this), null,
@@ -39,6 +50,8 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
             'presence', 'error', null);
         this.connection.addHandler(this.onMessage.bind(this), null,
             'message', null, null);
+        this.connection.addHandler(this.onIcTags.bind(this), null,
+            'ic-tags', null, null);
         this.connection.addHandler(this.onMute.bind(this),
             'http://jitsi.org/jitmeet/audio', 'iq', 'set', null, null);
         this.connection.addHandler(this.onMuteVideo.bind(this),
@@ -96,6 +109,8 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
      */
     onPresence(pres) {
         const from = pres.getAttribute('from');
+
+        //console.log("HUHUHUHU!");
 
         // What is this for? A workaround for something?
         if (pres.getAttribute('type')) {
@@ -162,11 +177,25 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
         const from = msg.getAttribute('from');
         const room = this.rooms[Strophe.getBareJidFromJid(from)];
 
+        //console.log("MESSAGE1234", msg);
+
         if (!room) {
             return true;
         }
 
+        if (this.icExtensions.handleICPayload(room, msg)) {
+            return true;
+        }
+
+        //TODO: <ic> Tag implementieren
+
         room.onMessage(msg, from);
+
+        return true;
+    }
+
+    onIcTags(msg) {
+        //console.log("ICTAGS1234", msg);
 
         return true;
     }

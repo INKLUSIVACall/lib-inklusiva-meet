@@ -374,6 +374,11 @@ export enum JitsiConferenceEvents {
     USER_STATUS_CHANGED = 'conference.statusChanged',
 
     /**
+     * Inclusiva Call roles have changed.
+     */
+    USER_IC_ROLES_CHANGED = 'conference.icRolesChanged',
+
+    /**
      * Event indicates that the permission for unmuting video has changed based on the number of video senders in the call
      * and the video sender limit configured in Jicofo.
      */
@@ -528,6 +533,7 @@ export const TRACK_REMOVED = JitsiConferenceEvents.TRACK_REMOVED;
 export const TRACK_UNMUTE_REJECTED = JitsiConferenceEvents.TRACK_UNMUTE_REJECTED;
 export const TRANSCRIPTION_STATUS_CHANGED = JitsiConferenceEvents.TRANSCRIPTION_STATUS_CHANGED;
 export const USER_JOINED = JitsiConferenceEvents.USER_JOINED;
+export const USER_IC_ROLES_CHANGED = JitsiConferenceEvents.USER_IC_ROLES_CHANGED;
 export const USER_LEFT = JitsiConferenceEvents.USER_LEFT;
 export const USER_ROLE_CHANGED = JitsiConferenceEvents.USER_ROLE_CHANGED;
 export const USER_STATUS_CHANGED = JitsiConferenceEvents.USER_STATUS_CHANGED;

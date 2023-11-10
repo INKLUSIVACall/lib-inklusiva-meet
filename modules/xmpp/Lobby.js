@@ -238,7 +238,7 @@ export default class Lobby {
             this.lobbyRoom.addEventListener(
                 XMPPEvents.MUC_MEMBER_JOINED,
                 // eslint-disable-next-line max-params
-                (from, nick, role, isHiddenDomain, statsID, status, identity, botType, jid) => {
+                (from, nick, role, isHiddenDomain, statsID, status, identity, botType, jid, features, isReplaceParticipant, tags) => {
                     // we need to ignore joins on lobby for participants that are already in the main room
                     if (Object.values(this.mainRoom.members).find(m => m.jid === jid)) {
                         return;

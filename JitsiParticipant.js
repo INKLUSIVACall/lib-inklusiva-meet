@@ -59,6 +59,14 @@ export default class JitsiParticipant {
     }
 
     /**
+     * IC Roles of user will be stored in this method.
+     * @param {array} icRoles 
+     */
+    updateICRoles(icRoles) {
+        this._icRoles = icRoles;
+    }
+
+    /**
      * Determines whether all JitsiTracks which are of a specific MediaType and which belong to this
      * JitsiParticipant are muted.
      *
@@ -167,6 +175,21 @@ export default class JitsiParticipant {
      */
     getRole() {
         return this._role;
+    }
+
+    /**
+     * @returns {string[]} The tags of this participant.
+     */
+    getTags() {
+        return this._tags;
+    }
+
+    /**
+     * Set user tags.
+     * @param {string[]} tags 
+     */
+    setTags(tags) {
+        this._tags = tags;
     }
 
     /**
@@ -339,6 +362,24 @@ export default class JitsiParticipant {
      */
     setRole(newRole) {
         this._role = newRole;
+    }
+
+    /**
+     * Adds an inclusiva call role to the participant.
+     * @param {string} icRole
+     * @param {string|null} partnerId
+     */
+    addICRole(icRole, partnerId = null) {
+        this.conference.addICRole(this.jid, icRole, partnerId);
+    }
+
+    /**
+     * Removes am inclusiva call role from the participant.
+     * @param {string} icRole
+     * @param {string|null} partnerId
+     */
+    removeICRole(cRole, partnerId = null) {
+        this.conference.removeICRole(this.jid, icRole, partnerId);
     }
 
     /**

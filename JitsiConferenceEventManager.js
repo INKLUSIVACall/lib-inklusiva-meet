@@ -359,6 +359,9 @@ JitsiConferenceEventManager.prototype.setupChatRoomListeners = function() {
         JitsiConferenceEvents.CONFERENCE_FAILED,
         JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED);
 
+    chatRoom.addListener(JitsiConferenceEvents.USER_IC_ROLES_CHANGED,
+        conference.onICMemberRoleUpdate.bind(conference));
+
     chatRoom.addListener(XMPPEvents.DISPLAY_NAME_CHANGED,
         conference.onDisplayNameChanged.bind(conference));
 
