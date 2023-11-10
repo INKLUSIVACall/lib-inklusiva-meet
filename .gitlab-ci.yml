@@ -13,7 +13,7 @@ deploy:
   - ssh-keyscan $HOST_DEV >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
   script:
-  - ssh $SSH_USER_DEV@$HOST_DEV "./deploy-inklusiva-meet.sh"
+  - ssh $SSH_USER_DEV@$HOST_DEV "./deploy-lib-jitsi-meet.sh"
   artifacts:
     paths:
     - public
