@@ -44,6 +44,8 @@ export default class JitsiParticipant {
         this._isReplaced = isReplaced;
         this._features = new Set();
 
+        this._icRoles = [];
+
         /**
          * Remote sources associated with the participant in the following format.
          * Map<mediaType, Map<sourceName, sourceInfo>>
@@ -380,6 +382,14 @@ export default class JitsiParticipant {
      */
     removeICRole(cRole, partnerId = null) {
         this.conference.removeICRole(this.jid, icRole, partnerId);
+    }
+
+    /**
+     * My current roles.
+     * @returns {array}
+     */
+    getICRoles() {
+        return this._icRoles;
     }
 
     /**

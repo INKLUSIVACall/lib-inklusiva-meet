@@ -64,7 +64,9 @@ class ICExtensions {
                 const roleName = roleElement.getElementsByTagName('name')[0]?.textContent || '';
                 const partner = roleElement.getElementsByTagName('partner')[0]?.textContent || null;
 
-                roles.push({'name': roleName, 'partner': partner});
+                if (roleName != '') {
+                    roles.push({'name': roleName, 'partner': partner});
+                }                
             });
 
             // Emit the event for this user's roles
