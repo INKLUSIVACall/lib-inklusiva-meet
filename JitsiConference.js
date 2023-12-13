@@ -200,6 +200,9 @@ export default function JitsiConference(options) {
     // Set up local roles
     this.localICRoles = [];
 
+    // local transcription Link
+    this.transcriptionLink = '';
+
     // when video muted by focus we receive the jid of the initiator of the mute
     this.mutedVideoByFocusActor = null;
 
@@ -1708,6 +1711,10 @@ JitsiConference.prototype.grantOwner = function(id) {
     this.room.setAffiliation(participant.getConnectionJid(), 'owner');
 };
 
+JitsiConference.prototype.updateTranscriptLink = function(link) {
+    this.room.updateTranscriptLink(link);
+};
+
 /**
  * Adds an Inclusiva-Call specific role to a participant.
  * @param {string} id id of the participant to add a tag to.
@@ -1728,10 +1735,10 @@ JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
 
         jid = participant.getJid();
     }
-    
+
     if (jid != null) {
         this.room.addICRole(jid, icRole, partnerId);
-    }    
+    }
 };
 
 /**
@@ -1763,7 +1770,7 @@ JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) 
 
         jid = participant.getJid();
     }
-    
+
     if (jid != null) {
         this.room.removeICRole(jid, icRole, partnerId);
     }
@@ -1870,9 +1877,9 @@ JitsiConference.prototype.muteParticipant = function(id, mediaType) {
 
 /**
  * Update the roles of a given user.
- * @param {*} jid 
- * @param {*} roles 
- * @returns 
+ * @param {*} jid
+ * @param {*} roles
+ * @returns
  */
 JitsiConference.prototype.onICMemberRoleUpdate = function(
     jid, roles) {
@@ -1896,12 +1903,16 @@ JitsiConference.prototype.onICMemberRoleUpdate = function(
     }
 }
 
+JitsiConference.prototype.onICTranscriptLinksUpdate = function(newLink) {
+    this.transcriptionLink = newLink;
+};
+
 /**
  * Reads the IC roles of a user.
- * @param {string} id 
+ * @param {string} id
  * @returns {array}
  */
-JitsiConference.prototype.getMemberICRoles = function(id) {    
+JitsiConference.prototype.getMemberICRoles = function(id) {
     if (id === 'focus') {
         return [];
     }
@@ -1921,7 +1932,7 @@ JitsiConference.prototype.getMemberICRoles = function(id) {
 
 /**
  * Reads the IC roles of the local user.
- * @param {string} id 
+ * @param {string} id
  * @returns {array}
  */
 JitsiConference.prototype.getLocalICRoles = function(id) {
@@ -1930,9 +1941,9 @@ JitsiConference.prototype.getLocalICRoles = function(id) {
 
 /**
  * Verfies if a member has a certain IC role.
- * @param {string} id 
- * @param {string} icRoleName 
- * @param {string|null} rolePartner 
+ * @param {string} id
+ * @param {string} icRoleName
+ * @param {string|null} rolePartner
  */
 JitsiConference.prototype.checkMemberHasRole = function(id, icRoleName, rolePartner = null) {
     if (id === 'focus') {
@@ -1969,9 +1980,9 @@ JitsiConference.prototype.checkMemberHasRole = function(id, icRoleName, rolePart
 
 /**
  * Verfies if the local member has a certain IC role.
- * @param {string} id 
- * @param {string} icRoleName 
- * @param {string|null} rolePartner 
+ * @param {string} id
+ * @param {string} icRoleName
+ * @param {string|null} rolePartner
  */
 JitsiConference.prototype.checkLocalHasRole = function(icRoleName, rolePartner = null) {
     return this.checkMemberHasRole(this.myUserId(), icRoleName, rolePartner);

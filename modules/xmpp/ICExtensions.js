@@ -5,7 +5,7 @@ class ICExtensions {
     /**
      *
      */
-    constructor() {        
+    constructor() {
     }
 
 
@@ -25,21 +25,25 @@ class ICExtensions {
                 break;
             }
         }
-        
+
         if (icElement != null) {
             // Process the payload inside <ic>
-            //console.log(`IC Payload for room:`, icElement);            
-            
+            //console.log(`IC Payload for room:`, icElement);
+
             for (let child of icElement.children) {
                 if (child.tagName === 'roles') {
                     this.handleICRoles(room, child, msg);
                 }
+
+                if(child.tagName === 'transcript_links') {
+                    this.handleICTranscriptLinks(room, child, msg);
+                }
             }
-            
+
             // Return true to indicate successful handling
             return true;
         }
-  
+
         // No <ic> tag found, nothing to handle
         return false;
     }
@@ -50,8 +54,8 @@ class ICExtensions {
      * @param {ChatRoom} room - The chat room associated with the message.
      * @param {Element} roleMsg - The roles stanza from Prosody.
      * @param {Element} roomMsg - The message XML element.
-     */    
-    handleICRoles(room, roleMsg, roomMsg) {        
+     */
+    handleICRoles(room, roleMsg, roomMsg) {
         //console.log("Incoming roles:" , roleMsg);
 
         // Iterate over each <user> element
@@ -66,15 +70,24 @@ class ICExtensions {
 
                 if (roleName != '') {
                     roles.push({'name': roleName, 'partner': partner});
-                }                
+                }
             });
 
             // Emit the event for this user's roles
             if (room.eventEmitter && userJid) {
                 room.eventEmitter.emit(JitsiConferenceEvents.USER_IC_ROLES_CHANGED, userJid, roles);
             }
-        });        
+        });
+    }
+
+    handleICTranscriptLinks(room, transcriptLinksMsg, roomMsg) {
+        const newLink = transcriptLinksMsg.getElementsByTagName('link')[0].textContent;
+
+        // Emit the event for this rooms transcript links
+        if (room.eventEmitter) {
+            room.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED, newLink);
+        }
     }
 }
-  
+
 export default ICExtensions;
