@@ -1718,7 +1718,7 @@ JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
     let jid = null;
 
     if (id == this.myUserId()) {
-        jid = this.connection.getJid();
+        jid = this.room.myroomjid;
     } else {
         const participant = this.getParticipantById(id);
 
@@ -1753,7 +1753,7 @@ JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) 
     let jid = null;
 
     if (id == this.myUserId() || id == null) {
-        jid = this.connection.getJid();
+        jid = this.room.myroomjid;
     } else {
         const participant = this.getParticipantById(id);
 
@@ -2706,7 +2706,7 @@ JitsiConference.prototype.myUserId = function() {
     return (
         this.room && this.room.myroomjid
             ? Strophe.getResourceFromJid(this.room.myroomjid)
-            : null);
+            : null);    
 };
 
 JitsiConference.prototype.sendTones = function(tones, duration, pause) {
