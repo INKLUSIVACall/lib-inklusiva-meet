@@ -362,6 +362,9 @@ JitsiConferenceEventManager.prototype.setupChatRoomListeners = function() {
     chatRoom.addListener(JitsiConferenceEvents.USER_IC_ROLES_CHANGED,
         conference.onICMemberRoleUpdate.bind(conference));
 
+    chatRoom.addListener(JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED,
+        conference.onICTranscriptLinksUpdate.bind(conference));
+
     chatRoom.addListener(XMPPEvents.DISPLAY_NAME_CHANGED,
         conference.onDisplayNameChanged.bind(conference));
 

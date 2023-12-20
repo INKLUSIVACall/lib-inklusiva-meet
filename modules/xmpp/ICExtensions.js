@@ -1,6 +1,8 @@
-import ChatRoom from "./ChatRoom";
-import * as JitsiConferenceEvents from "/JitsiConferenceEvents";
+import * as JitsiConferenceEvents from '/JitsiConferenceEvents';
 
+/**
+ *
+ */
 class ICExtensions {
 
     /**
@@ -26,6 +28,10 @@ class ICExtensions {
             for (const child of icElement.children) {
                 if (child.tagName === 'roles') {
                     this.handleICRoles(room, child, msg);
+                }
+
+                if (child.tagName === 'transcript_links') {
+                    this.handleICTranscriptLinks(room, child, msg);
                 }
             }
 
@@ -77,6 +83,22 @@ class ICExtensions {
                 }
             }
         );
+    }
+
+    /**
+     * Handles the setting of new transcript Links.
+     *
+     * @param {ChatRoom} room - The chat room associated with the message.
+     * @param {Element} transcriptLinksMsg - The transcript links stanza from Prosody.
+     * @param {Element} roomMsg - The message XML element.
+     */
+    handleICTranscriptLinks(room, transcriptLinksMsg, roomMsg) {
+        const newLink = transcriptLinksMsg.getElementsByTagName('link')[0].textContent;
+
+        // Emit the event for this rooms transcript links
+        if (room.eventEmitter) {
+            room.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED, newLink);
+        }
     }
 }
 

@@ -85,7 +85,7 @@ export enum JitsiConferenceEvents {
 
     /**
      * A connection to the video bridge's data channel has been closed.
-     * This event is only emitted in 
+     * This event is only emitted in
      */
     DATA_CHANNEL_CLOSED = 'conference.dataChannelClosed',
 
@@ -379,6 +379,11 @@ export enum JitsiConferenceEvents {
     USER_IC_ROLES_CHANGED = 'conference.icRolesChanged',
 
     /**
+     * Inclusiva Call transcript link has changed.
+     */
+    ROOM_IC_TRANSCRIPT_LINKS_CHANGED = 'conference.icTranscriptLinksChanged',
+
+    /**
      * Event indicates that the permission for unmuting video has changed based on the number of video senders in the call
      * and the video sender limit configured in Jicofo.
      */
@@ -550,3 +555,4 @@ export const AV_MODERATION_PARTICIPANT_REJECTED = JitsiConferenceEvents.AV_MODER
 export const BREAKOUT_ROOMS_MOVE_TO_ROOM = JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM;
 export const BREAKOUT_ROOMS_UPDATED = JitsiConferenceEvents.BREAKOUT_ROOMS_UPDATED;
 export const METADATA_UPDATED = JitsiConferenceEvents.METADATA_UPDATED;
+export const ROOM_IC_TRANSCRIPT_LINKS_CHANGED = JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED;
