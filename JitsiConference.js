@@ -1736,11 +1736,7 @@ JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
         jid = participant.getJid();
     }
 
-<<<<<<< HEAD
     if (jid !== null) {
-=======
-    if (jid != null) {
->>>>>>> feature/1-infoleiste
         this.room.addICRole(jid, icRole, partnerId);
     }
 };
