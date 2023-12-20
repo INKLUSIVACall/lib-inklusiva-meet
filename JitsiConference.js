@@ -1710,6 +1710,7 @@ JitsiConference.prototype.grantOwner = function(id) {
 
 /**
  * Adds an Inclusiva-Call specific role to a participant.
+ *
  * @param {string} id id of the participant to add a tag to.
  * @param {string} icRole name of the role to grant.
  * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
@@ -1718,7 +1719,7 @@ JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
     let jid = null;
 
     if (id === this.myUserId()) {
-        jid = this.connection.getJid();
+        jid = this.room.myroomjid;
     } else {
         const participant = this.getParticipantById(id);
 
@@ -1736,6 +1737,7 @@ JitsiConference.prototype.addICRole = function(id, icRole, partnerId = null) {
 
 /**
  * Adds an Inclusiva-Call specific role to the local user.
+ *
  * @param {string} icRole name of the role to grant.
  * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
  */
@@ -1745,6 +1747,7 @@ JitsiConference.prototype.addLocalICRole = function(icRole, partnerId = null) {
 
 /**
  * Removes an unspecified role to a participant.
+ *
  * @param {string} id id of the participant to add a role to.
  * @param {string} icRole name of the role to remove.
  * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
@@ -1753,7 +1756,7 @@ JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) 
     let jid = null;
 
     if (id === this.myUserId() || id === null) {
-        jid = this.connection.getJid();
+        jid = this.room.myroomjid;
     } else {
         const participant = this.getParticipantById(id);
 
@@ -1771,6 +1774,7 @@ JitsiConference.prototype.removeICRole = function(id, icRole, partnerId = null) 
 
 /**
  * Removes an unspecified role from the local participand.
+ *
  * @param {string} icRole name of the role to remove.
  * @param {string|null} partnerId The partner of this role. Some roles like the text translator don't require partners.
  */
@@ -1884,6 +1888,7 @@ JitsiConference.prototype.onICMemberRoleUpdate = function(jid, roles) {
 
     if (id === this.myUserId()) {
         this.localICRoles = roles;
+        this.eventEmitter.emit(JitsiConferenceEvents.USER_IC_ROLES_CHANGED, id, roles);
 
         return;
     }
@@ -1892,6 +1897,7 @@ JitsiConference.prototype.onICMemberRoleUpdate = function(jid, roles) {
         const participant = this.participants.get(id);
 
         participant.updateICRoles(roles);
+        this.eventEmitter.emit(JitsiConferenceEvents.USER_IC_ROLES_CHANGED, id, roles);
     }
 };
 
@@ -1953,13 +1959,7 @@ JitsiConference.prototype.checkMemberHasRole = function(id, icRoleName, rolePart
 
     roleList.forEach(roleInfo => {
         if (roleInfo.name === icRoleName) {
-            if (typeof roleInfo.partner !== 'undefined' && roleInfo.partner !== null) {
-                if (roleInfo.partner === rolePartner) {
-                    hasRole = true;
-                }
-            } else {
-                hasRole = true;
-            }
+            hasRole = true;
         }
     });
 

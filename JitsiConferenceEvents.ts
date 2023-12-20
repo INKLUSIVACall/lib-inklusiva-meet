@@ -85,7 +85,7 @@ export enum JitsiConferenceEvents {
 
     /**
      * A connection to the video bridge's data channel has been closed.
-     * This event is only emitted in 
+     * This event is only emitted in
      */
     DATA_CHANNEL_CLOSED = 'conference.dataChannelClosed',
 

@@ -1,5 +1,4 @@
-import ChatRoom from "./ChatRoom";
-import * as JitsiConferenceEvents from "/JitsiConferenceEvents";
+import * as JitsiConferenceEvents from '/JitsiConferenceEvents';
 
 class ICExtensions {
 
