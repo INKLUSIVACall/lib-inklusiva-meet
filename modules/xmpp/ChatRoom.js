@@ -182,6 +182,7 @@ export default class ChatRoom extends Listenable {
 
         this.locked = false;
         this.transcriptionStatus = JitsiTranscriptionStatus.OFF;
+        this.transcriptLink = '';
     }
 
     /* eslint-enable max-params */
@@ -1271,6 +1272,26 @@ export default class ChatRoom extends Listenable {
             grantIQ,
             result => logger.log('Set affiliation of participant with jid: ', jid, 'to', affiliation, result),
             error => logger.log('Set affiliation of participant error: ', error));
+    }
+
+    /**
+     * Updates the link to the transcript.
+     *
+     * @param {string} link
+     */
+    updateTranscriptLink(link) {
+        const updateLinkIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('update-transcription-link', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up()
+        .c('link').t(link).up().up();
+
+        this.connection.sendIQ(
+            updateLinkIQ,
+            result => logger.log('Updated transcription link to ', link, result),
+            error => logger.log('Updating transcription link error: ', error));
     }
 
     /**

@@ -200,6 +200,9 @@ export default function JitsiConference(options) {
     // Set up local roles
     this.localICRoles = [];
 
+    // local transcription Link
+    this.transcriptionLink = '';
+
     // when video muted by focus we receive the jid of the initiator of the mute
     this.mutedVideoByFocusActor = null;
 
@@ -1708,6 +1711,10 @@ JitsiConference.prototype.grantOwner = function(id) {
     this.room.setAffiliation(participant.getConnectionJid(), 'owner');
 };
 
+JitsiConference.prototype.updateTranscriptLink = function(link) {
+    this.room.updateTranscriptLink(link);
+};
+
 /**
  * Adds an Inclusiva-Call specific role to a participant.
  *
@@ -1899,6 +1906,10 @@ JitsiConference.prototype.onICMemberRoleUpdate = function(jid, roles) {
         participant.updateICRoles(roles);
         this.eventEmitter.emit(JitsiConferenceEvents.USER_IC_ROLES_CHANGED, id, roles);
     }
+};
+
+JitsiConference.prototype.onICTranscriptLinksUpdate = function(newLink) {
+    this.transcriptionLink = newLink;
 };
 
 /**

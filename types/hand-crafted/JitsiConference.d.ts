@@ -159,4 +159,6 @@ export default class JitsiConference {
   enableAVModeration: ( mediaType: MediaType ) => void;
   disableAVModeration: ( mediaType: MediaType ) => void;
   avModerationApprove: ( mediaType: MediaType, id: string ) => void;
+  updateTranscriptLink: ( link: string ) => void;
+  onICTranscriptLinksUpdate: (link: string) => void;
 }
