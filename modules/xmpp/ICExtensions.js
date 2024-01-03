@@ -93,11 +93,15 @@ class ICExtensions {
      * @param {Element} roomMsg - The message XML element.
      */
     handleICTranscriptLinks(room, transcriptLinksMsg, roomMsg) {
-        const newLink = transcriptLinksMsg.getElementsByTagName('link')[0].textContent;
+        const newLink = transcriptLinksMsg.getElementsByTagName('link');
 
-        // Emit the event for this rooms transcript links
-        if (room.eventEmitter) {
-            room.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED, newLink);
+        if (newLink !== undefined && newLink.length > 0) {
+            const newLinkText = newLink[0].textContent;
+
+            // Emit the event for this rooms transcript links
+            if (room.eventEmitter) {
+                room.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED, newLinkText);
+            }
         }
     }
 }
