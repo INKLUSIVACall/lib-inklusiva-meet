@@ -182,6 +182,7 @@ export default class ChatRoom extends Listenable {
 
         this.locked = false;
         this.transcriptionStatus = JitsiTranscriptionStatus.OFF;
+        this.transcriptLink = '';
     }
 
     /* eslint-enable max-params */
@@ -671,12 +672,12 @@ export default class ChatRoom extends Listenable {
                     XMPPEvents.MUC_ROLE_CHANGED, from, member.role);
             }
 
-            
+
 
             // affiliation changed
             if (memberOfThis.affiliation !== member.affiliation) {
                 memberOfThis.affiliation = member.affiliation;
-            }            
+            }
 
             // fire event that botType had changed
             if (memberOfThis.botType !== member.botType) {
@@ -1274,12 +1275,32 @@ export default class ChatRoom extends Listenable {
     }
 
     /**
+     * Updates the link to the transcript.
+     *
+     * @param {string} link
+     */
+    updateTranscriptLink(link) {
+        const updateLinkIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('update-transcription-link', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up()
+        .c('link').t(link).up().up();
+
+        this.connection.sendIQ(
+            updateLinkIQ,
+            result => logger.log('Updated transcription link to ', link, result),
+            error => logger.log('Updating transcription link error: ', error));
+    }
+
+    /**
      * Adds an inclusiva call role to a user object.
      * @param jid
      * @param icRole
      * @param partnerId
      */
-    addICRole(participantJid, icRole, partnerId = null) {        
+    addICRole(participantJid, icRole, partnerId = null) {
         let addICRoleIQ = $iq({
             to: this.roomjid,
             type: 'set'
@@ -1288,11 +1309,12 @@ export default class ChatRoom extends Listenable {
         .c('room').t(this.roomjid).up()
         .c('participant').t(participantJid).up()
         .c('ic-role').c('name').t(icRole).up();
-        
-        if (partnerId != null) { //Partner will only be transmitted if necessary
+
+        // Partner will only be transmitted if necessary
+        if (partnerId !== null) {
             addICRoleIQ = addICRoleIQ.c('partner').t(partnerId).up();
         }
-        
+
         addICRoleIQ = addICRoleIQ.up().up();
 
         this.connection.sendIQ(
@@ -1307,7 +1329,7 @@ export default class ChatRoom extends Listenable {
      * @param icRole
      * @param partnerId
      */
-    removeICRole(participantJid,  icRole, partnerId = null) {
+    removeICRole(participantJid, icRole, partnerId = null) {
         let removeICRoleIQ = $iq({
             to: this.roomjid,
             type: 'set'
@@ -1316,12 +1338,13 @@ export default class ChatRoom extends Listenable {
         .c('room').t(this.roomjid).up()
         .c('participant').t(participantJid).up()
         .c('ic-role').c('name').t(icRole).up();
-        
-        if (partnerId != null) { //Partner will only be transmitted if necessary
-            removeICRoleIQ  = removeICRoleIQ.c('partner').t(partnerId).up();
+
+        // Partner will only be transmitted if necessary
+        if (partnerId !== null) {
+            removeICRoleIQ = removeICRoleIQ.c('partner').t(partnerId).up();
         }
-        
-        removeICRoleIQ  = removeICRoleIQ.up().up();
+
+        removeICRoleIQ = removeICRoleIQ.up().up();
 
         this.connection.sendIQ(
             removeICRoleIQ,
