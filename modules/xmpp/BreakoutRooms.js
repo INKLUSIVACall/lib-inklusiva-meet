@@ -48,12 +48,12 @@ export default class BreakoutRooms {
      * @param {string} subject - A subject for the breakout room.
      */
     createBreakoutRoom(subject) {
-        if (!this.isSupported() || !this.room.isModerator()) {
-            logger.error(`Cannot create breakout room - supported:${this.isSupported()},
-                moderator:${this.room.isModerator()}`);
+        // if (!this.isSupported() || !this.room.isModerator()) {
+        //     logger.error(`Cannot create breakout room - supported:${this.isSupported()},
+        //         moderator:${this.room.isModerator()}`);
 
-            return;
-        }
+        //     return;
+        // }
 
         const message = {
             type: BREAKOUT_ROOM_ACTIONS.ADD,
@@ -69,12 +69,12 @@ export default class BreakoutRooms {
      * @param {string} breakoutRoomJid - JID of the room to be removed.
      */
     removeBreakoutRoom(breakoutRoomJid) {
-        if (!this.isSupported() || !this.room.isModerator()) {
-            logger.error(`Cannot remove breakout room - supported:${this.isSupported()},
-                moderator:${this.room.isModerator()}`);
+        // if (!this.isSupported() || !this.room.isModerator()) {
+        //     logger.error(`Cannot remove breakout room - supported:${this.isSupported()},
+        //         moderator:${this.room.isModerator()}`);
 
-            return;
-        }
+        //     return;
+        // }
 
         const message = {
             type: BREAKOUT_ROOM_ACTIONS.REMOVE,
@@ -91,12 +91,12 @@ export default class BreakoutRooms {
      * @param {string} roomJid - JID of the target room.
      */
     sendParticipantToRoom(participantJid, roomJid) {
-        if (!this.isSupported() || !this.room.isModerator()) {
-            logger.error(`Cannot send participant to room - supported:${this.isSupported()},
-                moderator:${this.room.isModerator()}`);
+        // if (!this.isSupported() || !this.room.isModerator()) {
+        //     logger.error(`Cannot send participant to room - supported:${this.isSupported()},
+        //         moderator:${this.room.isModerator()}`);
 
-            return;
-        }
+        //     return;
+        // }
 
         const message = {
             type: BREAKOUT_ROOM_ACTIONS.MOVE_TO_ROOM,
