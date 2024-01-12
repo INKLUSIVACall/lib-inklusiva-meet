@@ -21,7 +21,7 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
     constructor(xmpp) {
         super();
         this.xmpp = xmpp;
-        this.rooms = {};       
+        this.rooms = {};
         this.icExtensions = new ICExtensions();
     }
 
@@ -176,8 +176,6 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
         // FIXME: this is a hack. but jingle on muc makes nickchanges hard
         const from = msg.getAttribute('from');
         const room = this.rooms[Strophe.getBareJidFromJid(from)];
-
-        //console.log("MESSAGE1234", msg);
 
         if (!room) {
             return true;
