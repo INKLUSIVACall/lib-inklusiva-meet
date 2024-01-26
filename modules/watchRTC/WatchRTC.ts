@@ -29,11 +29,6 @@ class WatchRTCHandler {
                 return;
             }
 
-            if (isRtcstatsEnabled(options)) {
-                logger.error('Cannot initialize WatchRTC when RTCStats is enabled.');
-                return;
-            }
-
             try {
                 if (options?.watchRTCConfigParams?.rtcApiKey) {
                     watchRTC.init({
@@ -66,8 +61,6 @@ class WatchRTCHandler {
                 watchRTC.persistentEnd();
                 watchRTC.setConfig(this.options);
                 logger.info('WatchRTC setConfig.');
-            } else {
-                logger.error('WatchRTC is enabled but it has not been configured.');
             }
         } catch (error) {
             logger.error('Failed to start WatchRTC session: ', error);

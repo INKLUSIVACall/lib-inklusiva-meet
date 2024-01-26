@@ -5,8 +5,6 @@ import * as StatisticsEvents from '../../service/statistics/Events';
 import browser from '../browser';
 import FeatureFlags from '../flags/FeatureFlags';
 
-const GlobalOnErrorHandler = require('../util/GlobalOnErrorHandler');
-
 const logger = getLogger(__filename);
 
 /**
@@ -17,12 +15,11 @@ const logger = getLogger(__filename);
  * @returns {number} packet loss percent
  */
 function calculatePacketLoss(lostPackets, totalPackets) {
-    if (!totalPackets || totalPackets <= 0
-            || !lostPackets || lostPackets <= 0) {
-        return 0;
+    if (lostPackets > 0 && totalPackets > 0) {
+        return Math.round(lostPackets / totalPackets * 100);
     }
 
-    return Math.round((lostPackets / totalPackets) * 100);
+    return 0;
 }
 
 /**
@@ -185,7 +182,6 @@ StatsCollector.prototype.stop = function() {
  * @param error an error that occurred on <tt>getStats</tt> call.
  */
 StatsCollector.prototype.errorCallback = function(error) {
-    GlobalOnErrorHandler.callErrorHandler(error);
     logger.error('Get stats error', error);
     this.stop();
 };
@@ -228,7 +224,6 @@ StatsCollector.prototype.start = function(startAudioLevelStats) {
                 try {
                     this.processStatsReport();
                 } catch (error) {
-                    GlobalOnErrorHandler.callErrorHandler(error);
                     logger.error('Processing of RTP stats failed:', error);
                 }
                 this.previousStatsReport = this.currentStatsReport;
@@ -271,9 +266,12 @@ StatsCollector.prototype._processAndEmitReport = function() {
         totalPackets[type] += loss.packetsTotal;
         lostPackets[type] += loss.packetsLost;
 
+        const ssrcBitrateDownload = ssrcStats.bitrate.download;
+        const ssrcBitrateUpload = ssrcStats.bitrate.upload;
+
         // process bitrate stats
-        bitrateDownload += ssrcStats.bitrate.download;
-        bitrateUpload += ssrcStats.bitrate.upload;
+        bitrateDownload += ssrcBitrateDownload;
+        bitrateUpload += ssrcBitrateUpload;
 
         ssrcStats.resetBitrate();
 
@@ -288,12 +286,12 @@ StatsCollector.prototype._processAndEmitReport = function() {
         let videoCodec;
 
         if (track.isAudioTrack()) {
-            audioBitrateDownload += ssrcStats.bitrate.download;
-            audioBitrateUpload += ssrcStats.bitrate.upload;
+            audioBitrateDownload += ssrcBitrateDownload;
+            audioBitrateUpload += ssrcBitrateUpload;
             audioCodec = ssrcStats.codec;
         } else {
-            videoBitrateDownload += ssrcStats.bitrate.download;
-            videoBitrateUpload += ssrcStats.bitrate.upload;
+            videoBitrateDownload += ssrcBitrateDownload;
+            videoBitrateUpload += ssrcBitrateUpload;
             videoCodec = ssrcStats.codec;
         }
 
@@ -358,18 +356,18 @@ StatsCollector.prototype._processAndEmitReport = function() {
     }
 
     this.conferenceStats.bitrate = {
-        'upload': bitrateUpload,
-        'download': bitrateDownload
+        upload: bitrateUpload,
+        download: bitrateDownload
     };
 
     this.conferenceStats.bitrate.audio = {
-        'upload': audioBitrateUpload,
-        'download': audioBitrateDownload
+        upload: audioBitrateUpload,
+        download: audioBitrateDownload
     };
 
     this.conferenceStats.bitrate.video = {
-        'upload': videoBitrateUpload,
-        'download': videoBitrateDownload
+        upload: videoBitrateUpload,
+        download: videoBitrateDownload
     };
 
     this.conferenceStats.packetLoss = {
@@ -410,13 +408,13 @@ StatsCollector.prototype._processAndEmitReport = function() {
         StatisticsEvents.CONNECTION_STATS,
         this.peerconnection,
         {
-            'bandwidth': this.conferenceStats.bandwidth,
-            'bitrate': this.conferenceStats.bitrate,
-            'packetLoss': this.conferenceStats.packetLoss,
-            'resolution': resolutions,
-            'framerate': framerates,
-            'codec': codecs,
-            'transport': this.conferenceStats.transport,
+            bandwidth: this.conferenceStats.bandwidth,
+            bitrate: this.conferenceStats.bitrate,
+            packetLoss: this.conferenceStats.packetLoss,
+            resolution: resolutions,
+            framerate: framerates,
+            codec: codecs,
+            transport: this.conferenceStats.transport,
             localAvgAudioLevels,
             avgAudioLevels
         });
