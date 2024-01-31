@@ -83,6 +83,7 @@ export default class JitsiConference {
   getLocalICRoles: ( ) => ICRole[];
   checkMemberHasRole: ( id:string, icRoleName: string, rolePartner?: string|null) => boolean;
   checkLocalHasRole: ( icRoleName: string, rolePartner?: string|null) => boolean;
+  rejectRecording: ( ) => void;
   addICRole: ( id:string, icRoleName: string, rolePartner?: string| null) => void;
   addLocalICRole: ( icRoleName: string, rolePartner?: string| null) => void;
   removeICRole: ( id:string, icRoleName: string, rolePartner?: string| null) => void;

@@ -1657,6 +1657,13 @@ JitsiConference.prototype.updateTranscriptLink = function(link) {
 };
 
 /**
+ * Deny the permission to record this conference.
+ */
+JitsiConference.prototype.rejectRecording = function() {
+    this.room.rejectRecording();
+};
+
+/**
  * Adds an Inclusiva-Call specific role to a participant.
  *
  * @param {string} id id of the participant to add a tag to.
@@ -1851,6 +1858,15 @@ JitsiConference.prototype.onICMemberRoleUpdate = function(jid, roles) {
 
 JitsiConference.prototype.onICTranscriptLinksUpdate = function(newLink) {
     this.transcriptionLink = newLink;
+};
+
+/**
+ * Recording was rejected.
+ */
+JitsiConference.prototype.onICRejectRecording = function() {
+    if (this.isModerator()) {
+        this.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_REJECT_RECORDING);
+    }
 };
 
 /**

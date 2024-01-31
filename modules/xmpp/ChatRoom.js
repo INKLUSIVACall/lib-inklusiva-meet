@@ -1323,6 +1323,23 @@ export default class ChatRoom extends Listenable {
     }
 
     /**
+     * Reject the recording.
+     */
+    rejectRecording() {
+        const rejectRecordingIQ = $iq({
+            to: this.roomjid,
+            type: 'set'
+        })
+        .c('reject-recording', { xmlns: 'https://jitsi.inclusiva-call.de/protocol/muc#tags' })
+        .c('room').t(this.roomjid).up().up().up();
+
+        this.connection.sendIQ(
+            rejectRecordingIQ,
+            result => logger.log('Sent the request to reject this recording', result),
+            error => logger.log('Sending the request to reject this recording failed with error: ', error));
+    }
+
+    /**
      * Adds an inclusiva call role to a user object.
      * @param jid
      * @param icRole

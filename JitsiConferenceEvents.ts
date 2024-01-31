@@ -383,6 +383,11 @@ export enum JitsiConferenceEvents {
     ROOM_IC_TRANSCRIPT_LINKS_CHANGED = 'conference.icTranscriptLinksChanged',
 
     /**
+     * Inclusiva Call transcript link has changed.
+     */
+    ROOM_IC_REJECT_RECORDING = 'conference.rejectRecording',
+
+    /**
      * Event indicates that the permission for unmuting video has changed based on the number of video senders in the call
      * and the video sender limit configured in Jicofo.
      */
@@ -567,3 +572,4 @@ export const BREAKOUT_ROOMS_MOVE_TO_ROOM = JitsiConferenceEvents.BREAKOUT_ROOMS_
 export const BREAKOUT_ROOMS_UPDATED = JitsiConferenceEvents.BREAKOUT_ROOMS_UPDATED;
 export const METADATA_UPDATED = JitsiConferenceEvents.METADATA_UPDATED;
 export const ROOM_IC_TRANSCRIPT_LINKS_CHANGED = JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED;
+export const ROOM_IC_REJECT_RECORDING = JitsiConferenceEvents.ROOM_IC_REJECT_RECORDING;

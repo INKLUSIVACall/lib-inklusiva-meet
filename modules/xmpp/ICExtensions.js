@@ -33,6 +33,10 @@ class ICExtensions {
                 if (child.tagName === 'transcript_links') {
                     this.handleICTranscriptLinks(room, child, msg);
                 }
+
+                if (child.tagName === 'reject-recording') {
+                    this.handleICRejectRecording(room);
+                }
             }
 
             // Return true to indicate successful handling
@@ -102,6 +106,18 @@ class ICExtensions {
             if (room.eventEmitter) {
                 room.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_TRANSCRIPT_LINKS_CHANGED, newLinkText);
             }
+        }
+    }
+
+    /**
+     * Handles a recording rejection.
+     *
+     * @param {ChatRoom} room - The chat room associated with the message.
+     */
+    handleICRejectRecording(room) {
+        // Emit the event for this rooms
+        if (room.eventEmitter) {
+            room.eventEmitter.emit(JitsiConferenceEvents.ROOM_IC_REJECT_RECORDING);
         }
     }
 }
