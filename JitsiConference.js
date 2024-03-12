@@ -1919,7 +1919,6 @@ JitsiConference.prototype.checkMemberHasRole = function(id, icRoleName, rolePart
         roleList = this.localICRoles;
     } else if (this.participants.has(id)) {
         const participant = this.participants.get(id);
-
         roleList = participant.getICRoles();
     }
 
@@ -1928,6 +1927,13 @@ JitsiConference.prototype.checkMemberHasRole = function(id, icRoleName, rolePart
     roleList.forEach(roleInfo => {
         if (roleInfo.name === icRoleName) {
             hasRole = true;
+            if (rolePartner != null) {
+                if (roleInfo.partner != null) {
+                    if (roleInfo.partner !== rolePartner) {
+                        hasRole = false;
+                    }
+                }
+            }
         }
     });
 
