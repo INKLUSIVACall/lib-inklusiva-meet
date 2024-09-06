@@ -1,5 +1,5 @@
 import { getLogger } from '@jitsi/logger';
-import clonedeep from 'lodash.clonedeep';
+import { cloneDeep, isEqual } from 'lodash-es';
 
 import * as JitsiConferenceEvents from '../../JitsiConferenceEvents';
 import { MediaType } from '../../service/RTC/MediaType';
@@ -47,6 +47,7 @@ let rtcTrackIdCounter = 0;
 function _createLocalTracks(mediaStreamMetaData = []) {
     return mediaStreamMetaData.map(metaData => {
         const {
+            constraints,
             sourceId,
             sourceType,
             stream,
@@ -63,6 +64,7 @@ function _createLocalTracks(mediaStreamMetaData = []) {
         rtcTrackIdCounter = safeCounterIncrement(rtcTrackIdCounter);
 
         return new JitsiLocalTrack({
+            constraints,
             deviceId,
             facingMode,
             mediaType: track.kind,
@@ -299,6 +301,10 @@ export default class RTC extends Listenable {
      * @param {*} constraints
      */
     setReceiverVideoConstraints(constraints) {
+        if (isEqual(this._receiverVideoConstraints, constraints)) {
+            return;
+        }
+
         this._receiverVideoConstraints = constraints;
 
         if (this._channel && this._channel.isOpen()) {
@@ -367,7 +373,7 @@ export default class RTC extends Listenable {
      * @return {TraceablePeerConnection}
      */
     createPeerConnection(signaling, pcConfig, isP2P, options) {
-        const pcConstraints = clonedeep(RTCUtils.pcConstraints);
+        const pcConstraints = cloneDeep(RTCUtils.pcConstraints);
 
         if (options.enableInsertableStreams) {
             logger.debug('E2EE - setting insertable streams constraints');
@@ -653,39 +659,6 @@ export default class RTC extends Listenable {
     }
 
     /**
-     * Returns <tt>true<tt/> if given WebRTC MediaStream is considered a valid
-     * "user" stream which means that it's not a "receive only" stream nor a
-     * "mixed" JVB stream.
-     *
-     * Clients that implement Unified Plan, such as Firefox use recvonly
-     * "streams/channels/tracks" for receiving remote stream/tracks, as opposed
-     * to Plan B where there are only 3 channels: audio, video and data.
-     *
-     * @param {MediaStream} stream The WebRTC MediaStream instance.
-     * @returns {boolean}
-     */
-    static isUserStream(stream) {
-        return RTC.isUserStreamById(stream.id);
-    }
-
-    /**
-     * Returns <tt>true<tt/> if a WebRTC MediaStream identified by given stream
-     * ID is considered a valid "user" stream which means that it's not a
-     * "receive only" stream nor a "mixed" JVB stream.
-     *
-     * Clients that implement Unified Plan, such as Firefox use recvonly
-     * "streams/channels/tracks" for receiving remote stream/tracks, as opposed
-     * to Plan B where there are only 3 channels: audio, video and data.
-     *
-     * @param {string} streamId The id of WebRTC MediaStream.
-     * @returns {boolean}
-     */
-    static isUserStreamById(streamId) {
-        return streamId && streamId !== 'mixedmslabel'
-            && streamId !== 'default';
-    }
-
-    /**
      * Allows to receive list of available cameras/microphones.
      * @param {function} callback Would receive array of devices as an
      *      argument.
@@ -758,7 +731,7 @@ export default class RTC extends Listenable {
         if (this._channel) {
             this._channel.sendMessage(to, payload);
         } else {
-            throw new Error('Channel support is disabled!');
+            throw new Error('BridgeChannel has not been initialized yet');
         }
     }
 

@@ -1,10 +1,10 @@
 import { getLogger } from '@jitsi/logger';
-import clonedeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash-es';
 import 'webrtc-adapter';
 
 import JitsiTrackError from '../../JitsiTrackError';
 import * as JitsiTrackErrors from '../../JitsiTrackErrors';
-import CameraFacingMode from '../../service/RTC/CameraFacingMode';
+import { CameraFacingMode } from '../../service/RTC/CameraFacingMode';
 import RTCEvents from '../../service/RTC/RTCEvents';
 import Resolutions from '../../service/RTC/Resolutions';
 import { VideoType } from '../../service/RTC/VideoType';
@@ -35,6 +35,10 @@ const DEFAULT_CONSTRAINTS = {
             ideal: 1280,
             max: 1280,
             min: 320
+        },
+        frameRate: {
+            min: 15,
+            max: 30
         }
     }
 };
@@ -88,11 +92,14 @@ function emptyFuncton() {
  * @returns {Object}
  */
 function getConstraints(um = [], options = {}) {
-    // Create a deep copy of the constraints to avoid any modification of
-    // the passed in constraints object.
-    const constraints = clonedeep(options.constraints || DEFAULT_CONSTRAINTS);
+    // Create a deep copy of the constraints to avoid any modification of the passed in constraints object.
+    const constraints = cloneDeep(options.constraints || DEFAULT_CONSTRAINTS);
 
     if (um.indexOf('video') >= 0) {
+        if (!constraints.video) {
+            constraints.video = {};
+        }
+
         // The "resolution" option is a shortcut and takes precendence.
         if (Resolutions[options.resolution]) {
             const r = Resolutions[options.resolution];
@@ -101,8 +108,8 @@ function getConstraints(um = [], options = {}) {
             constraints.video.width = { ideal: r.width };
         }
 
-        if (!constraints.video) {
-            constraints.video = {};
+        if (!constraints.video.frameRate) {
+            constraints.video.frameRate = DEFAULT_CONSTRAINTS.video.frameRate;
         }
 
         // Override the constraints on Safari because of the following webkit bug.
@@ -122,11 +129,9 @@ function getConstraints(um = [], options = {}) {
             }
         }
         if (options.cameraDeviceId) {
-            constraints.video.deviceId = options.cameraDeviceId;
-        } else {
-            const facingMode = options.facingMode || CameraFacingMode.USER;
-
-            constraints.video.facingMode = facingMode;
+            constraints.video.deviceId = { exact: options.cameraDeviceId };
+        } else if (browser.isMobileDevice()) {
+            constraints.video.facingMode = options.facingMode || CameraFacingMode.USER;
         }
     } else {
         constraints.video = false;
@@ -139,10 +144,13 @@ function getConstraints(um = [], options = {}) {
 
         constraints.audio = {
             autoGainControl: !disableAGC && !disableAP,
-            deviceId: options.micDeviceId,
             echoCancellation: !disableAEC && !disableAP,
             noiseSuppression: !disableNS && !disableAP
         };
+
+        if (options.micDeviceId) {
+            constraints.audio.deviceId = { exact: options.micDeviceId };
+        }
 
         if (stereo) {
             Object.assign(constraints.audio, { channelCount: 2 });
@@ -515,6 +523,7 @@ class RTCUtils extends Listenable {
         } = options;
 
         const mediaStreamsMetaData = [];
+        let constraints = {};
 
         // Declare private functions to be used in the promise chain below.
         // These functions are declared in the scope of this function because
@@ -558,7 +567,7 @@ class RTCUtils extends Listenable {
                 }
 
                 const requestedDevices = [ 'video' ];
-                const constraints = {
+                const deviceConstraints = {
                     video: {
                         deviceId: matchingDevice.deviceId
 
@@ -566,7 +575,7 @@ class RTCUtils extends Listenable {
                     }
                 };
 
-                return this._getUserMedia(requestedDevices, constraints, timeout)
+                return this._getUserMedia(requestedDevices, deviceConstraints, timeout)
                     .then(stream => {
                         return {
                             sourceType: 'device',
@@ -637,7 +646,7 @@ class RTCUtils extends Listenable {
                 return Promise.resolve();
             }
 
-            const constraints = getConstraints(requestedCaptureDevices, otherOptions);
+            constraints = getConstraints(requestedCaptureDevices, otherOptions);
 
             logger.info('Got media constraints: ', JSON.stringify(constraints));
 
@@ -664,6 +673,7 @@ class RTCUtils extends Listenable {
                 const audioStream = new MediaStream(audioTracks);
 
                 mediaStreamsMetaData.push({
+                    constraints: constraints.audio,
                     stream: audioStream,
                     track: audioStream.getAudioTracks()[0],
                     effects: otherOptions.effects
@@ -676,6 +686,7 @@ class RTCUtils extends Listenable {
                 const videoStream = new MediaStream(videoTracks);
 
                 mediaStreamsMetaData.push({
+                    constraints: constraints.video,
                     stream: videoStream,
                     track: videoStream.getVideoTracks()[0],
                     videoType: VideoType.CAMERA,
@@ -831,15 +842,31 @@ class RTCUtils extends Listenable {
     getEventDataForActiveDevice(device) {
         const deviceList = [];
         const deviceData = {
-            'deviceId': device.deviceId,
-            'kind': device.kind,
-            'label': device.label,
-            'groupId': device.groupId
+            deviceId: device.deviceId,
+            kind: device.kind,
+            label: device.label,
+            groupId: device.groupId
         };
 
         deviceList.push(deviceData);
 
         return { deviceList };
+    }
+
+    /**
+     * Returns <tt>true<tt/> if a WebRTC MediaStream identified by given stream
+     * ID is considered a valid "user" stream which means that it's not a
+     * "receive only" stream nor a "mixed" JVB stream.
+     *
+     * Clients that implement Unified Plan, such as Firefox use recvonly
+     * "streams/channels/tracks" for receiving remote stream/tracks, as opposed
+     * to Plan B where there are only 3 channels: audio, video and data.
+     *
+     * @param {string} streamId The id of WebRTC MediaStream.
+     * @returns {boolean}
+     */
+    isUserStreamById(streamId) {
+        return streamId && streamId !== 'mixedmslabel' && streamId !== 'default';
     }
 }
 

@@ -40,11 +40,8 @@ Statistics.init = function(options) {
 
     Statistics.disableThirdPartyRequests = options.disableThirdPartyRequests;
 
-    // WatchRTC is not required to work for react native
-    browser.isReactNative()
-        ? logger.warn('Cannot initialize WatchRTC in a react native environment!')
-        : WatchRTC.init(options);
-
+    LocalStats.init();
+    WatchRTC.init(options);
     RTCStats.init(options);
 };
 
@@ -204,6 +201,14 @@ Statistics.prototype.removeConnectionStatsListener = function(listener) {
     this.eventEmitter.removeListener(
         StatisticsEvents.CONNECTION_STATS,
         listener);
+};
+
+Statistics.prototype.addEncodeTimeStatsListener = function(listener) {
+    this.eventEmitter.on(StatisticsEvents.ENCODE_TIME_STATS, listener);
+};
+
+Statistics.prototype.removeEncodeTimeStatsListener = function(listener) {
+    this.eventEmitter.removeListener(StatisticsEvents.ENCODE_TIME_STATS, listener);
 };
 
 Statistics.prototype.addByteSentStatsListener = function(listener) {

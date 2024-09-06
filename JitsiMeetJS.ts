@@ -19,7 +19,6 @@ import { TrackStreamingStatus } from './modules/connectivity/TrackStreamingStatu
 import getActiveAudioDevice from './modules/detection/ActiveDeviceDetector';
 import * as DetectionEvents from './modules/detection/DetectionEvents';
 import TrackVADEmitter from './modules/detection/TrackVADEmitter';
-import FeatureFlags from './modules/flags/FeatureFlags';
 import ProxyConnectionService
     from './modules/proxyconnection/ProxyConnectionService';
 import recordingConstants from './modules/recording/recordingConstants';
@@ -38,12 +37,6 @@ import *  as RTCStatsEvents from './modules/RTCStats/RTCStatsEvents';
 import { VideoType } from './service/RTC/VideoType';
 
 const logger = Logger.getLogger(__filename);
-
-/**
- * The amount of time to wait until firing
- * {@link JitsiMediaDevicesEvents.PERMISSION_PROMPT_IS_SHOWN} event.
- */
-const USER_MEDIA_SLOW_PROMISE_TIMEOUT = 1000;
 
 /**
  * Indicates whether GUM has been executed or not.
@@ -143,15 +136,14 @@ export default {
     mediaDevices: JitsiMediaDevices as unknown,
     analytics: Statistics.analytics as unknown,
     init(options: IJitsiMeetJSOptions = {}) {
+        Logger.setLogLevel(Logger.levels.INFO);
+
         // @ts-ignore
         logger.info(`This appears to be ${browser.getName()}, ver: ${browser.getVersion()}`);
 
+        JitsiMediaDevices.init();
         Settings.init(options.externalStorage);
         Statistics.init(options);
-        const flags = options.flags || {};
-
-        // Configure the feature flags.
-        FeatureFlags.init(flags);
 
         // Initialize global window.connectionTimes
         // FIXME do not use 'window'
@@ -273,7 +265,7 @@ export default {
     },
 
     /**
-     * Creates the media tracks and returns them trough the callback.
+     * Creates local media tracks.
      *
      * @param options Object with properties / settings specifying the tracks
      * which should be created. should be created or some additional
@@ -281,50 +273,21 @@ export default {
      * @param {Array} options.effects optional effects array for the track
      * @param {boolean} options.firePermissionPromptIsShownEvent - if event
      * JitsiMediaDevicesEvents.PERMISSION_PROMPT_IS_SHOWN should be fired
-     * @param {boolean} options.fireSlowPromiseEvent - if event
-     * JitsiMediaDevicesEvents.USER_MEDIA_SLOW_PROMISE_TIMEOUT should be fired
      * @param {Array} options.devices the devices that will be requested
      * @param {string} options.resolution resolution constraints
      * @param {string} options.cameraDeviceId
      * @param {string} options.micDeviceId
-     * @param {intiger} interval - the interval (in ms) for
-     * checking whether the desktop sharing extension is installed or not
-     * @param {Function} checkAgain - returns boolean. While checkAgain()==true
-     * createLocalTracks will wait and check on every "interval" ms for the
-     * extension. If the desktop extension is not install and checkAgain()==true
-     * createLocalTracks will finish with rejected Promise.
-     * @param {Function} listener - The listener will be called to notify the
-     * user of lib-jitsi-meet that createLocalTracks is starting external
-     * extension installation process.
-     * NOTE: If the inline installation process is not possible and external
-     * installation is enabled the listener property will be called to notify
-     * the start of external installation process. After that createLocalTracks
-     * will start to check for the extension on every interval ms until the
-     * plugin is installed or until checkAgain return false. If the extension
-     * is found createLocalTracks will try to get the desktop sharing track and
-     * will finish the execution. If checkAgain returns false, createLocalTracks
-     * will finish the execution with rejected Promise.
      *
-     * @deprecated old firePermissionPromptIsShownEvent
      * @returns {Promise.<{Array.<JitsiTrack>}, JitsiConferenceError>} A promise
      * that returns an array of created JitsiTracks if resolved, or a
      * JitsiConferenceError if rejected.
      */
-    createLocalTracks(options: ICreateLocalTrackOptions = {}, oldfirePermissionPromptIsShownEvent) {
-        let promiseFulfilled = false;
+    createLocalTracks(options: ICreateLocalTrackOptions = {}) {
+        const { firePermissionPromptIsShownEvent, ...restOptions } = options;
 
-        const { firePermissionPromptIsShownEvent, fireSlowPromiseEvent, ...restOptions } = options;
-        const firePermissionPrompt = firePermissionPromptIsShownEvent || oldfirePermissionPromptIsShownEvent;
-
-        if (firePermissionPrompt && !RTC.arePermissionsGrantedForAvailableDevices()) {
+        if (firePermissionPromptIsShownEvent && !RTC.arePermissionsGrantedForAvailableDevices()) {
             // @ts-ignore
             JitsiMediaDevices.emit(JitsiMediaDevicesEvents.PERMISSION_PROMPT_IS_SHOWN, browser.getName());
-        } else if (fireSlowPromiseEvent) {
-            window.setTimeout(() => {
-                if (!promiseFulfilled) {
-                    JitsiMediaDevices.emit(JitsiMediaDevicesEvents.SLOW_GET_USER_MEDIA);
-                }
-            }, USER_MEDIA_SLOW_PROMISE_TIMEOUT);
         }
 
         let isFirstGUM = false;
@@ -343,8 +306,6 @@ export default {
 
         return RTC.obtainAudioAndVideoPermissions(restOptions)
             .then(tracks => {
-                promiseFulfilled = true;
-
                 let endTS = window.performance.now();
 
                 window.connectionTimes['obtainPermissions.end'] = endTS;
@@ -385,8 +346,6 @@ export default {
                 return tracks;
             })
             .catch(error => {
-                promiseFulfilled = true;
-
                 if (error.name === JitsiTrackErrors.SCREENSHARING_USER_CANCELED) {
                     Statistics.sendAnalytics(
                         createGetUserMediaEvent(
@@ -488,38 +447,6 @@ export default {
     },
 
     /**
-     * Checks if its possible to enumerate available cameras/microphones.
-     *
-     * @returns {Promise<boolean>} a Promise which will be resolved only once
-     * the WebRTC stack is ready, either with true if the device listing is
-     * available available or with false otherwise.
-     * @deprecated use JitsiMeetJS.mediaDevices.isDeviceListAvailable instead
-     */
-    isDeviceListAvailable() {
-        logger.warn('This method is deprecated, use '
-            + 'JitsiMeetJS.mediaDevices.isDeviceListAvailable instead');
-
-        return this.mediaDevices.isDeviceListAvailable();
-    },
-
-    /**
-     * Returns true if changing the input (camera / microphone) or output
-     * (audio) device is supported and false if not.
-     *
-     * @param {string} [deviceType] - type of device to change. Default is
-     * {@code undefined} or 'input', 'output' - for audio output device change.
-     * @returns {boolean} {@code true} if available; {@code false}, otherwise.
-     * @deprecated use JitsiMeetJS.mediaDevices.isDeviceChangeAvailable instead
-     */
-    isDeviceChangeAvailable(deviceType) {
-        logger.warn('This method is deprecated, use '
-            + 'JitsiMeetJS.mediaDevices.isDeviceChangeAvailable instead');
-
-        return this.mediaDevices.isDeviceChangeAvailable(deviceType);
-    },
-
-
-    /**
      * Checks if the current environment supports having multiple audio
      * input devices in use simultaneously.
      *
@@ -536,18 +463,6 @@ export default {
      */
     isCollectingLocalStats() {
         return Statistics.audioLevelsEnabled && LocalStatsCollector.isLocalStatsSupported();
-    },
-
-    /**
-     * Executes callback with list of media devices connected.
-     *
-     * @param {function} callback
-     * @deprecated use JitsiMeetJS.mediaDevices.enumerateDevices instead
-     */
-    enumerateDevices(callback) {
-        logger.warn('This method is deprecated, use '
-            + 'JitsiMeetJS.mediaDevices.enumerateDevices instead');
-        this.mediaDevices.enumerateDevices(callback);
     },
 
     /**

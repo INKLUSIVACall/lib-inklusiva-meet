@@ -1,5 +1,4 @@
 import * as exported from "./JitsiConferenceEvents";
-import {VISITORS_MESSAGE, VISITORS_REJECTION} from "./JitsiConferenceEvents";
 
 // this test is brittle on purpose because it's designed to ensure that the TypeScript conversion maintains backward compatibility
 
@@ -15,6 +14,7 @@ describe( "/JitsiConferenceEvents members", () => {
         CONFERENCE_JOINED,
         CONFERENCE_LEFT,
         CONFERENCE_UNIQUE_ID_SET,
+        CONFERENCE_VISITOR_CODECS_CHANGED,
         CONNECTION_ESTABLISHED,
         CONNECTION_INTERRUPTED,
         CONNECTION_RESTORED,
@@ -27,6 +27,7 @@ describe( "/JitsiConferenceEvents members", () => {
         E2EE_VERIFICATION_AVAILABLE,
         E2EE_VERIFICATION_READY,
         E2EE_VERIFICATION_COMPLETED,
+        ENCODE_TIME_STATS_RECEIVED,
         ENDPOINT_MESSAGE_RECEIVED,
         ENDPOINT_STATS_RECEIVED,
         JVB121_STATUS,
@@ -71,6 +72,7 @@ describe( "/JitsiConferenceEvents members", () => {
         VIDEO_UNMUTE_PERMISSIONS_CHANGED,
         VISITORS_MESSAGE,
         VISITORS_REJECTION,
+        VISITORS_SUPPORTED_CHANGED,
         BOT_TYPE_CHANGED,
         LOBBY_USER_JOINED,
         LOBBY_USER_UPDATED,
@@ -83,6 +85,8 @@ describe( "/JitsiConferenceEvents members", () => {
         BREAKOUT_ROOMS_MOVE_TO_ROOM,
         BREAKOUT_ROOMS_UPDATED,
         METADATA_UPDATED,
+        SILENT_STATUS_CHANGED,
+        REACTION_RECEIVED,
         JitsiConferenceEvents,
         ...others
     } = exported;
@@ -98,6 +102,7 @@ describe( "/JitsiConferenceEvents members", () => {
         expect( CONFERENCE_JOINED ).toBe( 'conference.joined' );
         expect( CONFERENCE_LEFT ).toBe( 'conference.left' );
         expect( CONFERENCE_UNIQUE_ID_SET ).toBe( 'conference.unique_id_set' );
+        expect( CONFERENCE_VISITOR_CODECS_CHANGED ).toBe( 'conference.visitor_codecs_changed' );
         expect( CONNECTION_ESTABLISHED ).toBe( 'conference.connectionEstablished' );
         expect( CONNECTION_INTERRUPTED ).toBe( 'conference.connectionInterrupted' );
         expect( CONNECTION_RESTORED ).toBe( 'conference.connectionRestored' );
@@ -133,6 +138,7 @@ describe( "/JitsiConferenceEvents members", () => {
         expect( RECORDER_STATE_CHANGED ).toBe( 'conference.recorderStateChanged' );
         expect( VIDEO_SIP_GW_AVAILABILITY_CHANGED ).toBe( 'conference.videoSIPGWAvailabilityChanged' );
         expect( VIDEO_SIP_GW_SESSION_STATE_CHANGED ).toBe( 'conference.videoSIPGWSessionStateChanged' );
+        expect( VISITORS_SUPPORTED_CHANGED ).toBe( 'conference.visitorsSupported' );
         expect( START_MUTED_POLICY_CHANGED ).toBe( 'conference.start_muted_policy_changed' );
         expect( STARTED_MUTED ).toBe( 'conference.started_muted' );
         expect( SUBJECT_CHANGED ).toBe( 'conference.subjectChanged' );
@@ -163,6 +169,8 @@ describe( "/JitsiConferenceEvents members", () => {
         expect( BREAKOUT_ROOMS_MOVE_TO_ROOM ).toBe( 'conference.breakout-rooms.move-to-room' );
         expect( BREAKOUT_ROOMS_UPDATED ).toBe( 'conference.breakout-rooms.updated' );
         expect( METADATA_UPDATED ).toBe( 'conference.metadata.updated' );
+        expect( SILENT_STATUS_CHANGED ).toBe( 'conference.silentStatusChanged' );
+        expect( ENCODE_TIME_STATS_RECEIVED ).toBe( 'conference.encode_time_stats_received' );
 
         expect( JitsiConferenceEvents ).toBeDefined();
 
@@ -185,6 +193,7 @@ describe( "/JitsiConferenceEvents members", () => {
         expect( JitsiConferenceEvents.DOMINANT_SPEAKER_CHANGED ).toBe( 'conference.dominantSpeaker' );
         expect( JitsiConferenceEvents.CONFERENCE_CREATED_TIMESTAMP ).toBe( 'conference.createdTimestamp' );
         expect( JitsiConferenceEvents.DTMF_SUPPORT_CHANGED ).toBe( 'conference.dtmfSupportChanged' );
+        expect( JitsiConferenceEvents.ENCODE_TIME_STATS_RECEIVED ).toBe( 'conference.encode_time_stats_received' );
         expect( JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED ).toBe( 'conference.endpoint_message_received' );
         expect( JitsiConferenceEvents.ENDPOINT_STATS_RECEIVED ).toBe( 'conference.endpoint_stats_received' );
         expect( JitsiConferenceEvents.JVB121_STATUS ).toBe( 'conference.jvb121Status' );
@@ -226,6 +235,7 @@ describe( "/JitsiConferenceEvents members", () => {
         expect( JitsiConferenceEvents.USER_ROLE_CHANGED ).toBe( 'conference.roleChanged' );
         expect( JitsiConferenceEvents.USER_STATUS_CHANGED ).toBe( 'conference.statusChanged' );
         expect( JitsiConferenceEvents.VIDEO_UNMUTE_PERMISSIONS_CHANGED ).toBe( 'conference.video_unmute_permissions_changed' );
+        expect( JitsiConferenceEvents.VISITORS_SUPPORTED_CHANGED ).toBe( 'conference.visitorsSupported' );
         expect( JitsiConferenceEvents.BOT_TYPE_CHANGED ).toBe( 'conference.bot_type_changed' );
         expect( JitsiConferenceEvents.LOBBY_USER_JOINED ).toBe( 'conference.lobby.userJoined' );
         expect( JitsiConferenceEvents.LOBBY_USER_UPDATED ).toBe( 'conference.lobby.userUpdated' );
@@ -238,9 +248,11 @@ describe( "/JitsiConferenceEvents members", () => {
         expect( JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM ).toBe( 'conference.breakout-rooms.move-to-room' );
         expect( JitsiConferenceEvents.BREAKOUT_ROOMS_UPDATED ).toBe( 'conference.breakout-rooms.updated' );
         expect( JitsiConferenceEvents.METADATA_UPDATED ).toBe( 'conference.metadata.updated' );
+        expect( JitsiConferenceEvents.SILENT_STATUS_CHANGED ).toBe( 'conference.silentStatusChanged' );
         expect( JitsiConferenceEvents.E2EE_VERIFICATION_READY ).toBe( 'conference.e2ee.verification.ready' );
         expect( JitsiConferenceEvents.E2EE_VERIFICATION_COMPLETED ).toBe( 'conference.e2ee.verification.completed' );
         expect( JitsiConferenceEvents.E2EE_VERIFICATION_AVAILABLE ).toBe( 'conference.e2ee.verification.available' );
+        expect( JitsiConferenceEvents.REACTION_RECEIVED ).toBe( 'conference.reactionReceived' );
     } );
 
 it( "unknown members", () => {

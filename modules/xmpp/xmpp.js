@@ -149,6 +149,10 @@ export default class XMPP extends Listenable {
         // Cache of components used for certain features.
         this._components = [];
 
+        // We want to track messages that are received before we process the disco-info components
+        // re-order of receiving we may drop some messages
+        this._preComponentsMsgs = [];
+
         initStropheNativePlugins();
 
         const xmppPing = options.xmppPing || {};
@@ -203,6 +207,8 @@ export default class XMPP extends Listenable {
                 // ignore errors in order to not brake the unload.
             });
         });
+
+        this.connection.addHandler(this._onPrivateMessage.bind(this), null, 'message', null, null);
     }
 
     /**
@@ -263,9 +269,7 @@ export default class XMPP extends Listenable {
         // the version added in moderator.js, this one here is mostly defined
         // for keeping stats, since it is not made available to jocofo at
         // the time of the initial conference-request.
-        if (FeatureFlags.isJoinAsVisitorSupported()) {
-            this.caps.addFeature('http://jitsi.org/visitors-1');
-        }
+        this.caps.addFeature('http://jitsi.org/visitors-1');
     }
 
     /**
@@ -443,11 +447,6 @@ export default class XMPP extends Listenable {
                 this._components.push(this.speakerStatsComponentAddress);
             }
 
-            if (identity.type === 'conference_duration') {
-                this.conferenceDurationComponentAddress = identity.name;
-                this._components.push(this.conferenceDurationComponentAddress);
-            }
-
             if (identity.type === 'lobbyrooms') {
                 this.lobbySupported = true;
                 const processLobbyFeatures = f => {
@@ -515,8 +514,9 @@ export default class XMPP extends Listenable {
         this._maybeSendDeploymentInfoStat(true);
 
         if (this._components.length > 0) {
-            this.connection.addHandler(this._onPrivateMessage.bind(this), null, 'message', null, null);
+            this._preComponentsMsgs.forEach(this._onPrivateMessage.bind(this));
         }
+        this._preComponentsMsgs = [];
     }
 
     /**
@@ -1045,6 +1045,8 @@ export default class XMPP extends Listenable {
         const from = msg.getAttribute('from');
 
         if (!this._components.includes(from)) {
+            this._preComponentsMsgs.push(msg);
+
             return true;
         }
 
@@ -1058,8 +1060,6 @@ export default class XMPP extends Listenable {
 
         if (parsedJson[JITSI_MEET_MUC_TYPE] === 'speakerstats' && parsedJson.users) {
             this.eventEmitter.emit(XMPPEvents.SPEAKER_STATS_RECEIVED, parsedJson.users);
-        } else if (parsedJson[JITSI_MEET_MUC_TYPE] === 'conference_duration' && parsedJson.created_timestamp) {
-            this.eventEmitter.emit(XMPPEvents.CONFERENCE_TIMESTAMP_RECEIVED, parsedJson.created_timestamp);
         } else if (parsedJson[JITSI_MEET_MUC_TYPE] === 'av_moderation') {
             this.eventEmitter.emit(XMPPEvents.AV_MODERATION_RECEIVED, parsedJson);
         } else if (parsedJson[JITSI_MEET_MUC_TYPE] === 'breakout_rooms') {
@@ -1117,5 +1117,16 @@ export default class XMPP extends Listenable {
         }
 
         this.sendDeploymentInfo = false;
+
+        const { region, shard } = aprops;
+
+        if (region || shard) {
+            // avoids sending empty values
+            this.eventEmitter.emit(JitsiConnectionEvents.PROPERTIES_UPDATED, JSON.parse(JSON.stringify({
+                region,
+                shard
+            })));
+        }
+
     }
 }
